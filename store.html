@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الأرشيف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15130e;
+    --surface:#1d1a13;
+    --surface-2:#242017;
+    --brass:#a98f5b;
+    --brass-dim:#6f5f3f;
+    --parchment:#ece3cf;
+    --muted:#8a8267;
+    --line:#33301f;
+    --danger:#b5533c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 12% 8%, rgba(169,143,91,0.05), transparent 40%),
+      var(--ink);
+    color:var(--parchment);
+    font-family:'IBM Plex Sans Arabic', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:56px 24px 100px;}
+
+  header.top{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:6px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:28px;
+    margin-bottom:48px;
+    position:relative;
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:.14em;
+    color:var(--brass);
+    text-transform:uppercase;
+  }
+  h1.title{
+    font-family:'Amiri', serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:clamp(34px,6vw,54px);
+    margin:2px 0 0;
+    color:var(--parchment);
+  }
+  .sub{color:var(--muted);font-size:14px;margin-top:4px;}
+  .count-stamp{
+    position:absolute;
+    left:0; top:0;
+    border:1px solid var(--brass-dim);
+    color:var(--brass);
+    font-size:11px;
+    letter-spacing:.08em;
+    padding:6px 12px;
+    border-radius:2px;
+    transform:rotate(-2deg);
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(240px,1fr));
+    gap:2px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .card{
+    background:var(--surface);
+    display:flex;
+    flex-direction:column;
+    text-decoration:none;
+    color:inherit;
+    position:relative;
+    transition:background .25s ease;
+  }
+  .card:hover{background:var(--surface-2);}
+  .card:hover .no{color:var(--brass);}
+  .card:hover .frame img{transform:scale(1.035);}
+
+  .no{
+    position:absolute;
+    top:10px; right:12px;
+    font-family:'Amiri', serif;
+    font-style:italic;
+    font-size:13px;
+    color:var(--muted);
+    transition:color .25s ease;
+    z-index:2;
+  }
+  .frame{
+    aspect-ratio:1/1;
+    overflow:hidden;
+    background:#0f0d09;
+    border-bottom:1px solid var(--line);
+  }
+  .frame img{
+    width:100%;height:100%;object-fit:cover;
+    display:block;
+    filter:saturate(.92) contrast(1.02);
+    transition:transform .5s cubic-bezier(.2,.7,.2,1);
+  }
+  .meta{
+    padding:16px 16px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    flex:1;
+  }
+  .name{
+    font-size:15px;
+    font-weight:500;
+    line-height:1.4;
+  }
+  .link-row{
+    margin-top:auto;
+    font-size:12px;
+    color:var(--brass);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .link-row .arrow{transition:transform .25s ease;}
+  .card:hover .link-row .arrow{transform:translateX(-4px);}
+
+  .empty, .err{
+    padding:60px 20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+    border:1px dashed var(--line);
+  }
+
+  footer{
+    margin-top:60px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+    color:var(--muted);
+    font-size:11px;
+    letter-spacing:.06em;
+    text-align:center;
+  }
+
+  @media (max-width:520px){
+    .wrap{padding:36px 16px 80px;}
+    .count-stamp{position:static;display:inline-block;margin-bottom:14px;transform:rotate(0);}
+    header.top{padding-top:0;}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <span class="count-stamp" id="stamp">جاري التحميل…</span>
+      <span class="eyebrow">مجموعة خاصة</span>
+      <h1 class="title">الأرشيف</h1>
+      <span class="sub">كل قطعة هنا اخترتها بنفسي — اضغط للوصول إليها</span>
+    </header>
+
+    <div id="content">
+      <div class="empty">جارِ فتح الأرشيف…</div>
+    </div>
+
+    <footer>محفوظ ومُحدَّث يدويًا</footer>
+  </div>
+
+<script>
+/* ====== إعدادات المصدر ====== */
+/* عدّل القيم الثلاثة التالية لتطابق مستودعك على GitHub */
+const CONFIG = {
+  owner:  "YOUR_GITHUB_USERNAME",
+  repo:   "YOUR_REPO_NAME",
+  branch: "main",
+  path:   "items.json"
+};
+/* ============================ */
+
+const RAW_URL = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.path}?t=${Date.now()}`;
+
+async function load(){
+  const contentEl = document.getElementById('content');
+  const stampEl = document.getElementById('stamp');
+  try{
+    const res = await fetch(RAW_URL, {cache:"no-store"});
+    if(!res.ok) throw new Error("not found");
+    const items = await res.json();
+
+    if(!Array.isArray(items) || items.length === 0){
+      contentEl.innerHTML = `<div class="empty">لا توجد قطع منشورة بعد</div>`;
+      stampEl.textContent = "٠ قطعة";
+      return;
+    }
+
+    stampEl.textContent = toArabicCount(items.length);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+
+    items.slice().reverse().forEach((item, idx) => {
+      const n = items.length - idx;
+      const a = document.createElement('a');
+      a.className = 'card';
+      a.href = item.link || '#';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.innerHTML = `
+        <span class="no">${String(n).padStart(2,'0')}</span>
+        <div class="frame"><img src="${escapeAttr(item.image)}" alt="${escapeAttr(item.name)}" loading="lazy" onerror="this.style.opacity=0.15"></div>
+        <div class="meta">
+          <div class="name">${escapeHtml(item.name || 'بدون عنوان')}</div>
+          <div class="link-row"><span>فتح الرابط</span><span class="arrow">←</span></div>
+        </div>
+      `;
+      grid.appendChild(a);
+    });
+
+    contentEl.innerHTML = '';
+    contentEl.appendChild(grid);
+
+  }catch(e){
+    contentEl.innerHTML = `<div class="err">تعذّر فتح الأرشيف الآن — تحقق من الإعدادات في أعلى الملف (owner / repo / path)</div>`;
+    stampEl.textContent = "—";
+  }
+}
+
+function toArabicCount(n){
+  return n + (n === 1 ? " قطعة" : " قطعة");
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function escapeAttr(str){ return escapeHtml(str); }
+
+load();
+</script>
+</body>
+</html>
